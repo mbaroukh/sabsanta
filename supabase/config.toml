@@ -427,3 +427,6 @@ verify_jwt = false
 
 [functions.submit-preferences]
 verify_jwt = false
+
+[functions.send-emails]
+verify_jwt = false

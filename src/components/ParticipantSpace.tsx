@@ -2,9 +2,11 @@ import { useState } from "react";
 import {
   absoluteLink,
   type ParticipantView,
+  useInbox,
   useParticipantView,
   useTokenMutation,
 } from "../lib/api";
+import { Conversation } from "./Conversation";
 import { CopyButton } from "./CopyButton";
 import { btn, card, Page } from "./Layout";
 import { Ranking } from "./Ranking";
@@ -36,6 +38,15 @@ function Space({
   const { me, santa, progress } = view;
   const q = useParticipantView(token);
   const reveal = useTokenMutation<void>(token, "mark_revealed", () => ({}));
+  const sendToChild = useTokenMutation<string>(token, "send_message", (p_body) => ({
+    p_direction: "to_child",
+    p_body,
+  }));
+  const sendToSanta = useTokenMutation<string>(token, "send_message", (p_body) => ({
+    p_direction: "to_santa",
+    p_body,
+  }));
+  useInbox(me.inbox_key, token);
   const saveWishes = useTokenMutation<string>(token, "set_wishes", (p_wishes) => ({ p_wishes }));
   const saveEmail = useTokenMutation<string>(token, "set_email", (p_email) => ({ p_email }));
   const [wishes, setWishes] = useState(me.wishes);
@@ -121,6 +132,29 @@ function Space({
       </div>
 
       {sabWaiting && <Ranking token={token} view={view} />}
+
+      {view.has_assignment && me.revealed && view.child && (
+        <Conversation
+          testId="chat-child"
+          title={`Discuter avec ${view.child.name}`}
+          messages={view.to_child}
+          mine="santa"
+          otherLabel={view.child.name}
+          pending={sendToChild.isPending}
+          onSend={sendToChild.mutateAsync}
+        />
+      )}
+      {view.has_assignment && (
+        <Conversation
+          testId="chat-santa"
+          title="Discuter avec ton Santa 🎅 (anonyme)"
+          messages={view.to_santa}
+          mine="child"
+          otherLabel="Ton Santa 🎅"
+          pending={sendToSanta.isPending}
+          onSend={sendToSanta.mutateAsync}
+        />
+      )}
 
       <div className={`${card} space-y-2`}>
         <h2 className="font-bold">Mes souhaits</h2>

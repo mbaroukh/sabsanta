@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "./supabase";
 
 export type Mode = "classic" | "sab";
@@ -151,4 +152,21 @@ export const tokenKey = (code: string) => `sabsanta:${code}`;
 
 export function absoluteLink(path: string): string {
   return `${window.location.origin}${import.meta.env.BASE_URL}${path}`;
+}
+
+/** Abonnement broadcast à la boîte du participant : nouveaux messages et lancement en direct. */
+export function useInbox(inboxKey: string | undefined, token: string) {
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!inboxKey) return;
+    const refresh = () => qc.invalidateQueries({ queryKey: ["view", token] });
+    const channel = supabase
+      .channel(`inbox:${inboxKey}`)
+      .on("broadcast", { event: "message" }, refresh)
+      .on("broadcast", { event: "started" }, refresh)
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [inboxKey, token, qc]);
 }
