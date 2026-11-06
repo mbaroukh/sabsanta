@@ -13,5 +13,6 @@
     "verbatimModuleSyntax": true,
     "types": ["bun", "vite/client"]
   },
-  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts", "supabase/functions"]
+  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts", "supabase/functions"],
+  "exclude": ["supabase/functions/*/index.ts"]
 }
