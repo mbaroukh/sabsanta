@@ -1,0 +1,3 @@
+[test]
+root = "."
+pathIgnorePatterns = ["e2e/**", "node_modules/**"]
