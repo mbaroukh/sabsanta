@@ -87,3 +87,20 @@ L'organisateur ne voit jamais le résultat du tirage des autres : la surprise re
 - L'email est facultatif et ne sert qu'aux notifications.
 - Les liens sont longs et aléatoires : impossible de deviner celui d'un autre participant.
 - Personne, pas même l'organisateur, ne voit qui offre à qui.
+
+---
+
+## Développement
+
+Front : React, Vite, TanStack Router, Tailwind, motion. Backend : Supabase (Postgres, Edge Functions, Realtime).
+
+```bash
+bun install
+bun run db:start && bun run functions:serve   # Supabase local (Docker)
+bun run dev                                   # http://localhost:3000
+bun run lint && bun check && bun test         # vérifications
+bun run e2e                                   # tests Playwright (Supabase local requis)
+```
+
+Mise en place complète (local, cloud, GitHub Pages) : [`docs/supabase.md`](docs/supabase.md).
+Architecture et décisions : [`PLAN.md`](PLAN.md) et [`AGENTS.md`](AGENTS.md).
