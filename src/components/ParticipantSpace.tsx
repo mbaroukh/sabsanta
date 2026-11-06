@@ -7,6 +7,7 @@ import {
 } from "../lib/api";
 import { CopyButton } from "./CopyButton";
 import { btn, card, Page } from "./Layout";
+import { Ranking } from "./Ranking";
 import { Roulette } from "./Roulette";
 
 export function ParticipantSpace({ token, linkPath }: { token: string; linkPath: string }) {
@@ -40,7 +41,6 @@ function Space({
   const [wishes, setWishes] = useState(me.wishes);
   const [email, setEmail] = useState(me.email ?? "");
   const [spinning, setSpinning] = useState(false);
-  const [justRevealed, setJustRevealed] = useState(false);
 
   async function launch() {
     await reveal.mutateAsync();
@@ -51,15 +51,31 @@ function Space({
   const started = santa.status === "started";
   const canReveal = view.has_assignment && !me.revealed;
 
+  const banner = (
+    <div className={`${card} border-amber-300 bg-amber-50 text-sm`}>
+      🔑 Garde ce lien, c'est ta clé : sans lui, tu ne pourras pas revenir sur cette page.
+      <div className="mt-2 flex items-center gap-2">
+        <code className="min-w-0 flex-1 truncate">{absoluteLink(linkPath)}</code>
+        <CopyButton text={absoluteLink(linkPath)} />
+      </div>
+    </div>
+  );
+
+  const sabWaiting = santa.mode === "sab" && !view.has_assignment;
+  const mustRank = sabWaiting && !me.prefs_submitted;
+
+  if (mustRank) {
+    return (
+      <Page title={`Salut ${me.name} 👋`}>
+        {banner}
+        <Ranking token={token} view={view} />
+      </Page>
+    );
+  }
+
   return (
     <Page title={`Salut ${me.name} 👋`}>
-      <div className={`${card} border-amber-300 bg-amber-50 text-sm`}>
-        🔑 Garde ce lien, c'est ta clé : sans lui, tu ne pourras pas revenir sur cette page.
-        <div className="mt-2 flex items-center gap-2">
-          <code className="min-w-0 flex-1 truncate">{absoluteLink(linkPath)}</code>
-          <CopyButton text={absoluteLink(linkPath)} />
-        </div>
-      </div>
+      {banner}
 
       <div className={`${card} space-y-3 text-center`}>
         {canReveal && !spinning && (
@@ -76,15 +92,12 @@ function Space({
             target={view.child.name}
             onDone={() => {
               setSpinning(false);
-              setJustRevealed(true);
             }}
           />
         )}
         {!spinning && me.revealed && view.child && (
           <div>
-            <p className="text-slate-600">
-              {justRevealed ? "Tu offres un cadeau à" : "Tu offres un cadeau à"}
-            </p>
+            <p className="text-slate-600">Tu offres un cadeau à</p>
             <p data-testid="child-name" className="text-4xl font-bold text-red-700">
               {view.child.name}
             </p>
@@ -99,10 +112,15 @@ function Space({
             )}
           </div>
         )}
-        {!view.has_assignment && santa.mode === "sab" && (
-          <p>Le tirage aura lieu quand tout le monde aura donné son classement.</p>
+        {sabWaiting && (
+          <p data-testid="sab-waiting">
+            Classement enregistré ✓ Le tirage aura lieu quand tout le monde aura donné le sien (
+            {progress.prefs_done}/{progress.total}).
+          </p>
         )}
       </div>
+
+      {sabWaiting && <Ranking token={token} view={view} />}
 
       <div className={`${card} space-y-2`}>
         <h2 className="font-bold">Mes souhaits</h2>

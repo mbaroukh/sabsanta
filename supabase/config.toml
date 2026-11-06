@@ -424,3 +424,6 @@ enabled = true
 # Sécurité par jetons applicatifs (pas de JWT utilisateur) : la clé publishable n'est pas un JWT.
 [functions.create-santa]
 verify_jwt = false
+
+[functions.submit-preferences]
+verify_jwt = false

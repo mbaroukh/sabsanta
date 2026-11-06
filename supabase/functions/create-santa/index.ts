@@ -43,17 +43,15 @@ Deno.serve(async (req) => {
   const names = body.participants.map((p) => p.trim());
   const exclusions = (body.exclusions ?? []).filter(([g, r]) => g !== r);
 
-  // En classique, on tire d'abord : un tirage impossible est refusé avant toute écriture.
-  let assignments: Record<string, string> | null = null;
-  if (body.mode === "classic") {
-    const res = draw({
-      participants: names,
-      exclusions: exclusions.map(([g, r]) => [names[g] as string, names[r] as string]),
-    });
-    if (!res.ok)
-      return json({ error: "draw_impossible", reason: res.reason, detail: res.detail }, 422);
-    assignments = res.assignments;
-  }
+  // On tire (ou, en Sab, on vérifie la faisabilité) avant toute écriture : tirage impossible = refus.
+  const res = draw({
+    participants: names,
+    exclusions: exclusions.map(([g, r]) => [names[g] as string, names[r] as string]),
+  });
+  if (!res.ok)
+    return json({ error: "draw_impossible", reason: res.reason, detail: res.detail }, 422);
+  const assignments: Record<string, string> | null =
+    body.mode === "classic" ? res.assignments : null;
 
   const db = createClient(
     Deno.env.get("SUPABASE_URL") as string,

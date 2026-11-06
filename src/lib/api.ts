@@ -75,6 +75,28 @@ export async function createSanta(input: CreateSantaInput) {
   return data as { code: string; admin_token: string };
 }
 
+export async function submitPreferences(token: string, ranking: string[]) {
+  const { data, error } = await supabase.functions.invoke("submit-preferences", {
+    body: { token, ranking },
+  });
+  if (error) {
+    if (error instanceof FunctionsHttpError) {
+      const body = await error.context.json().catch(() => ({}));
+      throw new Error(body.message ?? body.error ?? "Erreur serveur");
+    }
+    throw error;
+  }
+  return data as { drawn: boolean };
+}
+
+export function useSubmitPreferences(token: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ranking: string[]) => submitPreferences(token, ranking),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["view", token] }),
+  });
+}
+
 export const useSantaPublic = (code: string) =>
   useQuery({
     queryKey: ["santa", code],
