@@ -54,9 +54,13 @@ bun run e2e                              # Playwright ; nécessite db:start + fu
    ```bash
    bunx supabase login
    bunx supabase link --project-ref <ref>
-   bunx supabase db push                    # applique les migrations
+   bunx supabase db push --remote           # applique les migrations
    bunx supabase functions deploy create-santa submit-preferences send-emails
    ```
+
+   ⚠️ Avec la CLI 3, `db push` et `migration list` visent **la base locale par défaut** : sans `--remote`,
+   rien n'est envoyé au cloud (et aucun mot de passe n'est demandé). Vérifie avec
+   `bunx supabase migration list --remote` : la colonne « remote » doit être remplie.
 
    Les trois fonctions ont `verify_jwt = false` dans `config.toml` : la sécurité repose sur les jetons
    applicatifs, pas sur un JWT utilisateur (la clé publishable n'est pas un JWT).
