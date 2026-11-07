@@ -7,6 +7,7 @@ export type Mode = "classic" | "sab";
 export type Status = "open" | "drawn" | "started";
 
 export interface SantaPublic {
+  name: string;
   mode: Mode;
   status: Status;
   participants: { id: string; name: string }[];
@@ -30,7 +31,7 @@ export interface ParticipantView {
     revealed: boolean;
     prefs_submitted: boolean;
   };
-  santa: { mode: Mode; status: Status; code: string };
+  santa: { name: string; mode: Mode; status: Status; code: string };
   has_assignment: boolean;
   child: { name: string; wishes: string } | null;
   progress: { total: number; joined: number; prefs_done: number; revealed: number };
@@ -58,6 +59,7 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
 }
 
 export interface CreateSantaInput {
+  name: string;
   mode: Mode;
   participants: string[];
   adminIndex: number;
@@ -147,8 +149,6 @@ export function useAdminReset(adminToken: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", adminToken] }),
   });
 }
-
-export const tokenKey = (code: string) => `sabsanta:${code}`;
 
 export function absoluteLink(path: string): string {
   return `${window.location.origin}${import.meta.env.BASE_URL}${path}`;

@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { btn, card, Page } from "../../components/Layout";
-import { claimParticipant, tokenKey, useSantaPublic } from "../../lib/api";
+import { claimParticipant, useSantaPublic } from "../../lib/api";
+import { loadSpaces, saveSpace } from "../../lib/spaces";
 
 export const Route = createFileRoute("/s/$code")({ component: Join });
 
@@ -13,14 +14,13 @@ function Join() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Déjà rejoint depuis ce navigateur : on redirige vers l'espace personnel.
+  // Déjà rejoint depuis ce navigateur : on redirige vers l'espace personnel mémorisé.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(tokenKey(code));
-      if (saved) navigate({ to: "/p/$token", params: { token: saved }, replace: true });
-    } catch {
-      /* stockage indisponible */
-    }
+    const known = loadSpaces().find((sp) => sp.code === code);
+    if (!known) return;
+    if (known.kind === "a")
+      navigate({ to: "/a/$token", params: { token: known.token }, replace: true });
+    else navigate({ to: "/p/$token", params: { token: known.token }, replace: true });
   }, [code, navigate]);
 
   async function claim() {
@@ -29,11 +29,15 @@ function Join() {
     setError(null);
     try {
       const token = await claimParticipant(code, choice);
-      try {
-        localStorage.setItem(tokenKey(code), token);
-      } catch {
-        /* le lien suffit */
-      }
+      const me = q.data?.participants.find((p) => p.id === choice);
+      saveSpace({
+        token,
+        kind: "p",
+        name: me?.name ?? "",
+        santaName: q.data?.name ?? "",
+        code,
+        mode: q.data?.mode ?? "classic",
+      });
       navigate({ to: "/p/$token", params: { token } });
     } catch {
       setError("Cette place vient d'être prise. Choisis-en une autre.");
@@ -48,7 +52,7 @@ function Join() {
   if (!q.data) return <Page title="Secret Santa introuvable" />;
 
   return (
-    <Page title="Qui es-tu ?">
+    <Page kicker={q.data.name} title="Qui es-tu ?">
       <div className={`${card} space-y-4`}>
         {q.data.participants.length === 0 ? (
           <p>Tout le monde a déjà rejoint ce Secret Santa.</p>
@@ -71,8 +75,8 @@ function Join() {
               ))}
             </ul>
             <p className="text-sm text-slate-600">
-              🔑 Tu recevras un lien personnel : garde-le, c'est ta clé. Une fois choisi, ton nom
-              n'est plus proposé aux autres.
+              Ton accès sera mémorisé sur ce navigateur. Une fois ton nom choisi, il n'est plus
+              proposé aux autres.
             </p>
             {error && (
               <p role="alert" className="text-red-700">

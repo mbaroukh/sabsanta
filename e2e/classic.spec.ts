@@ -13,6 +13,7 @@ test("classique : création, 4 participants rejoignent, révèlent, le Santa dé
 }) => {
   const admin = await newPage(browser);
   await admin.goto("/create");
+  await admin.getByLabel("Nom du Secret Santa").fill("Noël test");
 
   // Collage d'une liste multi-lignes : saisie rapide.
   const input = admin.getByLabel("Nom du participant");
@@ -99,6 +100,7 @@ test("classique : création, 4 participants rejoignent, révèlent, le Santa dé
 test("admin : réinitialisation d'un participant avant démarrage", async ({ browser }) => {
   const admin = await newPage(browser);
   await admin.goto("/create");
+  await admin.getByLabel("Nom du Secret Santa").fill("Noël test");
   const input = admin.getByLabel("Nom du participant");
   for (const n of ["Zoé", "Yann", "Xavier"]) {
     await input.fill(n);

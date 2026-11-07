@@ -33,7 +33,7 @@ Avant le tirage, chaque participant classe les autres par ordre de préférence.
 ### 1. L'organisateur crée le Secret Santa
 
 1. Sur la page d'accueil, il clique sur **« Créer mon Secret Santa »**.
-2. Il saisit la liste des participants.
+2. Il donne un **nom** au Secret Santa (par ex. « Noël en famille 2026 ») et saisit la liste des participants.
 3. Pour chaque participant, il indique à qui cette personne ne doit pas offrir de cadeau.
 4. Il indique lequel des participants est **lui-même** (« c'est moi »).
 5. Il choisit le mode : **classique** ou **Sab**.
@@ -47,7 +47,7 @@ Avant le tirage, chaque participant classe les autres par ordre de préférence.
 2. Il reçoit alors son **lien personnel**. Une fois qu'un nom a été choisi, il n'est plus proposé aux autres, et personne d'autre ne peut prendre sa place.
 3. En mode Sab, il commence par **classer** les personnes à qui il aimerait offrir.
 
-> 🔑 Le lien personnel sert de clé : il faut le garder précieusement (en favori par exemple). Sans lui, on ne peut pas revenir sur sa page.
+> 💡 Ton accès est **mémorisé sur ton navigateur** : tu retrouves tes Secret Santas en haut de la page d'accueil. Le lien personnel permet d'y accéder depuis un autre navigateur ou un autre appareil (il est personnel : ne le partage pas).
 
 ### 3. L'espace personnel du participant
 

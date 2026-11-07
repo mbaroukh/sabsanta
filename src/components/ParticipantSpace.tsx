@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   absoluteLink,
   type ParticipantView,
@@ -6,6 +6,7 @@ import {
   useParticipantView,
   useTokenMutation,
 } from "../lib/api";
+import { removeSpace, saveSpace } from "../lib/spaces";
 import { Conversation } from "./Conversation";
 import { CopyButton } from "./CopyButton";
 import { btn, card, Page } from "./Layout";
@@ -14,6 +15,26 @@ import { Roulette } from "./Roulette";
 
 export function ParticipantSpace({ token, linkPath }: { token: string; linkPath: string }) {
   const q = useParticipantView(token);
+  const { data } = q;
+  const kind = linkPath.startsWith("a/") ? "a" : "p";
+
+  // Mémorise l'accès sur ce navigateur (affiché sur l'accueil) ; un jeton invalide est oublié.
+  useEffect(() => {
+    if (data)
+      saveSpace({
+        token,
+        kind,
+        name: data.me.name,
+        santaName: data.santa.name,
+        code: data.santa.code,
+        mode: data.santa.mode,
+        total: data.progress.total,
+      });
+  }, [data, token, kind]);
+  useEffect(() => {
+    if (q.error) removeSpace(token);
+  }, [q.error, token]);
+
   if (q.isLoading) return <Page title="…" />;
   if (q.error || !q.data)
     return (
@@ -64,7 +85,11 @@ function Space({
 
   const banner = (
     <div className={`${card} border-amber-300 bg-amber-50 text-sm`}>
-      🔑 Garde ce lien, c'est ta clé : sans lui, tu ne pourras pas revenir sur cette page.
+      <p>
+        ✅ Ton accès est mémorisé sur ce navigateur : tu retrouveras cette page depuis l'accueil du
+        site. Pour y accéder depuis un autre navigateur ou un autre appareil, utilise ce lien
+        personnel (à ne partager avec personne) :
+      </p>
       <div className="mt-2 flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate">{absoluteLink(linkPath)}</code>
         <CopyButton text={absoluteLink(linkPath)} />
@@ -77,7 +102,7 @@ function Space({
 
   if (mustRank) {
     return (
-      <Page title={`Salut ${me.name} 👋`}>
+      <Page kicker={santa.name} title={`Salut ${me.name} 👋`}>
         {banner}
         <Ranking token={token} view={view} />
       </Page>
@@ -85,7 +110,7 @@ function Space({
   }
 
   return (
-    <Page title={`Salut ${me.name} 👋`}>
+    <Page kicker={santa.name} title={`Salut ${me.name} 👋`}>
       {banner}
 
       <div className={`${card} space-y-3 text-center`}>

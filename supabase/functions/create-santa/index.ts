@@ -3,6 +3,8 @@ import { corsHeaders, json } from "../_shared/cors.ts";
 import { draw } from "../_shared/draw.ts";
 
 interface Body {
+  /** Nom du Secret Santa (1 à 60 caractères). */
+  name: string;
   mode: "classic" | "sab";
   participants: string[];
   /** Index (dans participants) de l'organisateur. */
@@ -12,6 +14,8 @@ interface Body {
 }
 
 function validate(b: Body): string | null {
+  if (typeof b?.name !== "string" || b.name.trim().length === 0 || b.name.trim().length > 60)
+    return "nom du Secret Santa invalide (1 à 60 caractères)";
   if (b?.mode !== "classic" && b?.mode !== "sab") return "mode invalide";
   if (!Array.isArray(b.participants) || b.participants.length < 3 || b.participants.length > 60)
     return "il faut entre 3 et 60 participants";
@@ -64,7 +68,7 @@ Deno.serve(async (req) => {
 
   const { data: santa, error: e1 } = await db
     .from("santas")
-    .insert({ mode: body.mode, status: assignments ? "drawn" : "open" })
+    .insert({ name: body.name.trim(), mode: body.mode, status: assignments ? "drawn" : "open" })
     .select("id, code, admin_token")
     .single();
   if (e1 || !santa) return json({ error: "server_error", message: e1?.message }, 500);

@@ -3,11 +3,13 @@ import { persist } from "zustand/middleware";
 import type { Mode } from "./api";
 
 interface Wizard {
+  santaName: string;
   names: string[];
   adminName: string | null;
   /** "donneur→receveur" (noms) */
   exclusions: string[];
   mode: Mode;
+  setSantaName: (name: string) => void;
   addNames: (raw: string) => void;
   removeName: (name: string) => void;
   setAdmin: (name: string) => void;
@@ -17,7 +19,13 @@ interface Wizard {
 }
 
 const key = (g: string, r: string) => `${g}→${r}`;
-const initial = { names: [], adminName: null, exclusions: [], mode: "classic" as Mode };
+const initial = {
+  santaName: "",
+  names: [],
+  adminName: null,
+  exclusions: [],
+  mode: "classic" as Mode,
+};
 
 export const splitNames = (raw: string) =>
   raw
@@ -29,6 +37,7 @@ export const useWizard = create<Wizard>()(
   persist(
     (set) => ({
       ...initial,
+      setSantaName: (santaName) => set({ santaName }),
       addNames: (raw) =>
         set((s) => {
           const known = new Set(s.names.map((n) => n.toLowerCase()));

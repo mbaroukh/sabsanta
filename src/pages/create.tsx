@@ -4,6 +4,7 @@ import { draw } from "../../supabase/functions/_shared/draw";
 import { CopyButton } from "../components/CopyButton";
 import { btn, btnGhost, card, Page } from "../components/Layout";
 import { absoluteLink, createSanta } from "../lib/api";
+import { saveSpace } from "../lib/spaces";
 import { parseExclusion, splitNames, useWizard } from "../lib/store";
 
 export const Route = createFileRoute("/create")({ component: Create });
@@ -38,12 +39,23 @@ function Create() {
     try {
       const idx = (n: string) => w.names.indexOf(n);
       const res = await createSanta({
+        name: w.santaName.trim(),
         mode: w.mode,
         participants: w.names,
         adminIndex: idx(w.adminName),
         exclusions: w.exclusions
           .map(parseExclusion)
           .map(([g, r]) => [idx(g), idx(r)] as [number, number]),
+      });
+      // L'organisateur retrouvera son espace depuis l'accueil, sans avoir à conserver le lien.
+      saveSpace({
+        token: res.admin_token,
+        kind: "a",
+        name: w.adminName,
+        santaName: w.santaName.trim(),
+        code: res.code,
+        mode: w.mode,
+        total: w.names.length,
       });
       setResult(res);
       setStep(3);
@@ -74,7 +86,9 @@ function Create() {
         <div className={`${card} space-y-2 border-red-300`}>
           <h2 className="font-bold">Ton lien d'organisateur</h2>
           <p className="text-sm text-slate-600">
-            🔑 Garde-le pour toi : c'est ta clé, sans lui tu perds l'accès.
+            ✅ Ton accès est mémorisé sur ce navigateur : tu retrouveras ta page depuis l'accueil du
+            site. Garde ce lien pour y accéder depuis un autre navigateur ou appareil (il est
+            personnel : ne le partage pas).
           </p>
           <code
             data-testid="admin-link"
@@ -97,7 +111,16 @@ function Create() {
     <Page title="Créer un Secret Santa">
       {step === 1 && (
         <section className={`${card} space-y-4`}>
-          <h2 className="font-bold">1. Les participants</h2>
+          <h2 className="font-bold">1. Le Secret Santa</h2>
+          <input
+            aria-label="Nom du Secret Santa"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            value={w.santaName}
+            maxLength={60}
+            placeholder="Ex. Noël en famille 2026"
+            onChange={(e) => w.setSantaName(e.target.value)}
+          />
+          <h3 className="pt-2 font-bold">Les participants</h3>
           <p className="text-sm text-slate-600">
             Un nom puis Entrée, ou colle une liste (un nom par ligne). Minimum 3.
           </p>
@@ -137,7 +160,7 @@ function Create() {
           <button
             type="button"
             className={btn}
-            disabled={w.names.length + splitNames(draft).length < 3}
+            disabled={!w.santaName.trim() || w.names.length + splitNames(draft).length < 3}
             onClick={() => {
               commit();
               setStep(2);

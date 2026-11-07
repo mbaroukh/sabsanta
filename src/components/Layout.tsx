@@ -1,12 +1,25 @@
 import type { ReactNode } from "react";
 
-export function Page({ children, title }: { children?: ReactNode; title?: string }) {
+export function Page({
+  children,
+  title,
+  kicker,
+}: {
+  children?: ReactNode;
+  title?: string;
+  kicker?: string;
+}) {
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <header className="text-center">
         <a href={import.meta.env.BASE_URL} className="text-lg font-bold text-red-700">
           🎅 Sabsanta
         </a>
+        {kicker && (
+          <p data-testid="santa-name" className="mt-1 text-sm font-medium text-slate-500">
+            {kicker}
+          </p>
+        )}
         {title && <h1 className="mt-2 text-3xl font-bold text-slate-800">{title}</h1>}
       </header>
       {children}

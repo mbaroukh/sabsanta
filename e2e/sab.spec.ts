@@ -23,6 +23,7 @@ test("Sab : classements, tirage automatique au dernier, premiers choix respecté
 }) => {
   const admin = await newPage(browser);
   await admin.goto("/create");
+  await admin.getByLabel("Nom du Secret Santa").fill("Noël test");
   const input = admin.getByLabel("Nom du participant");
   for (const n of NAMES) {
     await input.fill(n);
@@ -97,6 +98,7 @@ test("Sab : classements, tirage automatique au dernier, premiers choix respecté
 
 test("Sab : un tirage impossible est refusé dès la création", async ({ page }) => {
   await page.goto("/create");
+  await page.getByLabel("Nom du Secret Santa").fill("Noël test");
   const input = page.getByLabel("Nom du participant");
   for (const n of ["Ana", "Ben", "Cam"]) {
     await input.fill(n);

@@ -6,6 +6,7 @@ const newPage = async (b: Browser): Promise<Page> => (await b.newContext()).newP
 test("messagerie : santa ↔ enfant en direct, anonyme côté enfant", async ({ browser }) => {
   const admin = await newPage(browser);
   await admin.goto("/create");
+  await admin.getByLabel("Nom du Secret Santa").fill("Noël test");
   const input = admin.getByLabel("Nom du participant");
   for (const n of NAMES) {
     await input.fill(n);

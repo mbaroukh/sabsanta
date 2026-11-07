@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Gift, Snow, Tree } from "../components/Illustrations";
 import { btn } from "../components/Layout";
+import { removeSpace, type Space, useSpaces } from "../lib/spaces";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -19,15 +20,61 @@ const FEATURES = [
   {
     emoji: "🔑",
     title: "Zéro inscription",
-    text: "Pas de compte ni de mot de passe : un lien personnel suffit. L'email reste facultatif.",
+    text: "Pas de compte ni de mot de passe : ton accès est mémorisé sur ton navigateur. L'email reste facultatif.",
   },
 ];
+
+function MySpaces() {
+  const spaces = useSpaces();
+  if (spaces.length === 0) return null;
+  const detail = (sp: Space) =>
+    [
+      sp.name ? `Tu es ${sp.name}` : null,
+      sp.kind === "a" ? "organisateur" : null,
+      sp.mode === "sab" ? "mode Sab" : "mode classique",
+      sp.total ? `${sp.total} participants` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  return (
+    <section
+      data-testid="my-spaces"
+      className="w-full rounded-2xl bg-white/15 p-4 text-left backdrop-blur"
+    >
+      <h2 className="mb-2 font-bold">Mes Secret Santas</h2>
+      <ul className="space-y-2">
+        {spaces.map((sp) => (
+          <li key={sp.token} className="flex items-center gap-2 rounded-xl bg-white/10 p-3">
+            <Link
+              to={sp.kind === "a" ? "/a/$token" : "/p/$token"}
+              params={{ token: sp.token }}
+              className="min-w-0 flex-1 hover:underline"
+            >
+              <div className="truncate font-semibold">{sp.santaName || "Secret Santa"}</div>
+              <div className="truncate text-sm text-sky-100">{detail(sp)}</div>
+            </Link>
+            <button
+              type="button"
+              className="rounded-lg px-2 py-1 text-sm text-sky-100 hover:bg-white/10"
+              aria-label={`Retirer ${sp.santaName} de cet appareil`}
+              title="Oublier ce Secret Santa sur ce navigateur (le lien personnel reste valable)"
+              onClick={() => removeSpace(sp.token)}
+            >
+              Retirer
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-950 via-sky-900 to-sky-700 text-white">
       <Snow />
       <main className="relative mx-auto flex max-w-3xl flex-col items-center gap-10 px-4 py-12 text-center">
+        <MySpaces />
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
